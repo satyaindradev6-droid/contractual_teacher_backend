@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model academic_detail {
+  id                      BigInt    @id @default(autoincrement())
+  application_id          BigInt
+  qualification           Int
+  course                  Int
+  course_type             Int
+  subjects_specialization String
+  board_university        String    @db.VarChar(255)
+  course_duration_months  Int
+  year_of_passing         Int
+  marks_total             String    @db.VarChar(50)
+  marks_obtained          String    @db.VarChar(50)
+  percentage              String?   @db.VarChar(20)
+  status                  Int?      @default(1)
+  created_at              DateTime? @default(now()) @db.Timestamp(6)
+  updated_at              DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model application_tracker {
+  id                         BigInt    @id @default(autoincrement())
+  application_id             BigInt
+  basic_information          Int?      @default(0)
+  school_preference_posting  Int?      @default(0)
+  academic_qualification     Int?      @default(0)
+  professional_qualification Int?      @default(0)
+  experience                 Int?      @default(0)
+  upload_documents           Int?      @default(0)
+  preview                    Int?      @default(0)
+  declaration_submission     Int?      @default(0)
+  current_step               Int?      @default(1)
+  status                     Int?      @default(1)
+  created_at                 DateTime? @default(now()) @db.Timestamp(6)
+  updated_at                 DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model experience_detail {
+  id                   BigInt    @id @default(autoincrement())
+  application_id       BigInt
+  organization_name    String    @db.VarChar(255)
+  designation          Int
+  start_date           DateTime  @db.Date
+  end_date             DateTime? @db.Date
+  currently_working    Boolean?  @default(false)
+  key_responsibilities String
+  status               Int?      @default(1)
+  created_at           DateTime? @default(now()) @db.Timestamp(6)
+  updated_at           DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model master_schools_kvs {
+  id                         Int       @id @default(autoincrement())
+  school_id                  String?   @db.VarChar
+  uuid                       String?   @db.VarChar
+  state_id                   String?   @db.VarChar
+  state_name                 String?   @db.VarChar
+  ro_id                      String?   @db.VarChar
+  ro_name                    String?   @db.VarChar
+  school_name                String?   @db.VarChar
+  email_id                   String?   @db.VarChar
+  created_at                 DateTime? @db.Timestamp(6)
+  updated_at                 DateTime? @db.Timestamp(6)
+  kv_id                      String?   @db.VarChar
+  kv_name                    String?   @db.VarChar
+  shift                      String?   @db.VarChar
+  password                   String?   @db.VarChar
+  token                      String?   @db.VarChar
+  contact_no                 String?   @db.VarChar
+  website                    String?   @db.VarChar
+  station_id                 String?   @db.VarChar
+  station_type               String?   @db.VarChar
+  district_id                String?   @db.VarChar
+  district_name              String?   @db.VarChar
+  city                       String?   @db.VarChar
+  postal_address_1           String?   @db.VarChar
+  postal_address_2           String?   @db.VarChar
+  postal_address_3           String?   @db.VarChar
+  pin_code                   String?   @db.VarChar
+  constituency_id            String?   @db.VarChar
+  longitude                  String?   @db.VarChar
+  latitude                   String?   @db.VarChar
+  location_type              String?   @db.VarChar
+  opening_year               String?   @db.VarChar
+  area_of_land               String?   @db.VarChar
+  ownership_type             String?   @db.VarChar
+  year_of_permanent_building String?   @db.VarChar
+  construction_agency        String?   @db.VarChar
+  establishment_year         String?   @db.VarChar
+  udise_code                 String?   @db.VarChar
+  cbse_affliation            String?   @db.VarChar
+  cbse_school_code           String?   @db.VarChar
+  sponsored_by               String?   @db.VarChar
+  sponsoring_agency          String?   @db.VarChar
+  school_building            String?   @db.VarChar
+  building_type              String?   @db.VarChar
+  infra_facility             String?   @db.VarChar
+  is_pms_hree                String?   @db.VarChar
+  classes_availability       String[]  @db.VarChar
+  status                     String?   @db.VarChar
+}
+
+model master_states {
+  state_id     Int      @id @default(autoincrement())
+  state_name   String   @db.VarChar(135)
+  is_active    String   @db.VarChar(135)
+  last_updated DateTime @default(now()) @db.Timestamp(6)
+}
+
+model school_and_post_choice {
+  id             BigInt    @id(map: "school_choice_post_pkey") @default(autoincrement())
+  application_id BigInt
+  school_id      Int
+  kv_id          Int
+  post1          Int?
+  post2          Int?
+  post3          Int?
+  choice1        Int?
+  choice2        Int?
+  choice3        Int?
+  status         Int?      @default(1)
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model upload_document {
+  id             BigInt    @id @default(autoincrement())
+  application_id BigInt
+  photo          String?   @db.VarChar(255)
+  pan_card       String?   @db.VarChar(255)
+  aadhar_card    String?   @db.VarChar(255)
+  marksheet1     String?   @db.VarChar(255)
+  marksheet2     String?   @db.VarChar(255)
+  marksheet3     String?   @db.VarChar(255)
+  marksheet4     String?   @db.VarChar(255)
+  marksheet5     String?   @db.VarChar(255)
+  degree1        String?   @db.VarChar(255)
+  degree2        String?   @db.VarChar(255)
+  degree3        String?   @db.VarChar(255)
+  degree4        String?   @db.VarChar(255)
+  degree5        String?   @db.VarChar(255)
+  status         Int?      @default(1)
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model applications {
+  id              BigInt    @id @default(autoincrement())
+  first_name      String    @db.VarChar(100)
+  middle_name     String?   @db.VarChar(100)
+  last_name       String?   @db.VarChar(100)
+  date_of_birth   DateTime  @db.Date
+  gender          Int
+  pan_no          String?   @db.VarChar(20)
+  aadhar_no       String?   @db.VarChar(20)
+  category        Int
+  marital_status  Int
+  contact_address String
+  city            String    @db.VarChar(100)
+  state           String    @db.VarChar(100)
+  district        String    @db.VarChar(100)
+  phone_std       String?   @db.VarChar(20)
+  mobile_no       String    @db.VarChar(15)
+  email           String    @db.VarChar(150)
+  alternative_no  String?   @db.VarChar(15)
+  password        String    @db.VarChar(255)
+  status          Int?      @default(1)
+  created_at      DateTime? @default(now()) @db.Timestamp(6)
+  updated_at      DateTime? @default(now()) @db.Timestamp(6)
+}
