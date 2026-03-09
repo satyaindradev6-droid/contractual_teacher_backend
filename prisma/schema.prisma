@@ -5,6 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model academic_detail {
@@ -23,7 +24,7 @@ model academic_detail {
   status                  Int?         @default(1)
   created_at              DateTime?    @default(now()) @db.Timestamp(6)
   updated_at              DateTime?    @default(now()) @db.Timestamp(6)
-  application             applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
+  applications            applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model application_tracker {
@@ -41,7 +42,7 @@ model application_tracker {
   status                     Int?         @default(1)
   created_at                 DateTime?    @default(now()) @db.Timestamp(6)
   updated_at                 DateTime?    @default(now()) @db.Timestamp(6)
-  application                applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
+  applications               applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model applications {
@@ -78,6 +79,15 @@ model applications {
   upload_document          upload_document[]
 }
 
+model config_app_invitation_date {
+  id         Int       @id @default(autoincrement())
+  ro_id      Int
+  kv_id      Int       @unique
+  start_date DateTime? @db.Date
+  end_date   DateTime? @db.Date
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+}
+
 model config_designation_post {
   id                  Int       @id @default(autoincrement())
   ro_id               Int
@@ -105,7 +115,7 @@ model experience_detail {
   status               Int?         @default(1)
   created_at           DateTime?    @default(now()) @db.Timestamp(6)
   updated_at           DateTime?    @default(now()) @db.Timestamp(6)
-  application          applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
+  applications         applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model master_designations {
@@ -187,44 +197,6 @@ model master_states {
   last_updated DateTime @default(now()) @db.Timestamp(6)
 }
 
-model school_and_post_choice {
-  id             BigInt       @id(map: "school_choice_post_pkey") @default(autoincrement())
-  application_id BigInt
-  school_id      Int
-  kv_id          Int
-  choice         Int?
-  status         Int?         @default(1)
-  created_at     DateTime?    @default(now()) @db.Timestamp(6)
-  updated_at     DateTime?    @default(now()) @db.Timestamp(6)
-  state_id       BigInt?
-  designation_id Int?
-  subject_id     Int?
-  ro_id          Int?
-  application    applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model upload_document {
-  id             BigInt       @id @default(autoincrement())
-  application_id BigInt
-  photo          String?      @db.VarChar(255)
-  pan_card       String?      @db.VarChar(255)
-  aadhar_card    String?      @db.VarChar(255)
-  status         Int?         @default(1)
-  created_at     DateTime?    @default(now()) @db.Timestamp(6)
-  updated_at     DateTime?    @default(now()) @db.Timestamp(6)
-  all_document   String?      @db.VarChar(255)
-  application    applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model config_app_invitation_date {
-  id         Int       @id @default(autoincrement())
-  ro_id      Int
-  kv_id      Int       @unique
-  start_date DateTime? @db.Date
-  end_date   DateTime? @db.Date
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-}
-
 model master_subjects {
   id             Int      @id(map: "ci_subjects_pkey") @default(autoincrement())
   name           String   @db.VarChar(100)
@@ -252,6 +224,22 @@ model professional_qualifications {
   updated_at      DateTime? @default(now()) @db.Timestamp(6)
 }
 
+model school_and_post_choice {
+  id             BigInt       @id(map: "school_choice_post_pkey") @default(autoincrement())
+  application_id BigInt
+  school_id      Int
+  kv_id          Int
+  choice         Int?
+  status         Int?         @default(1)
+  created_at     DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at     DateTime?    @default(now()) @db.Timestamp(6)
+  state_id       BigInt?
+  designation_id Int?
+  subject_id     Int?
+  ro_id          Int?
+  applications   applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
 model submit_application {
   id             BigInt    @id @default(autoincrement())
   application_id BigInt
@@ -261,4 +249,17 @@ model submit_application {
   status         Int?      @default(1)
   created_at     DateTime? @default(now()) @db.Timestamp(6)
   updated_at     DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model upload_document {
+  id             BigInt       @id @default(autoincrement())
+  application_id BigInt
+  photo          String?      @db.VarChar(255)
+  pan_card       String?      @db.VarChar(255)
+  aadhar_card    String?      @db.VarChar(255)
+  status         Int?         @default(1)
+  created_at     DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at     DateTime?    @default(now()) @db.Timestamp(6)
+  all_document   String?      @db.VarChar(255)
+  applications   applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
 }
