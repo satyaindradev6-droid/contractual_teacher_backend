@@ -13,6 +13,8 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
+    console.log('Auth middleware - Token present:', !!token);
+
     if (!token) {
       return res.status(401).json({ 
         success: false, 
@@ -22,6 +24,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
       if (err) {
+        console.log('Token verification failed:', err.message);
         return res.status(403).json({ 
           success: false, 
           message: 'Invalid or expired token' 
@@ -30,6 +33,7 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 
       (req as any).userId = (decoded as JwtPayload).userId;
       (req as any).userMobile = (decoded as JwtPayload).mobile_no;
+      console.log('Token verified, userId:', (decoded as JwtPayload).userId);
       next();
     });
   } catch (error) {

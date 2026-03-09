@@ -1,59 +1,132 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model academic_detail {
-  id                      BigInt    @id @default(autoincrement())
+  id                      BigInt       @id @default(autoincrement())
   application_id          BigInt
   qualification           Int
   course                  Int
   course_type             Int
   subjects_specialization String
-  board_university        String    @db.VarChar(255)
+  board_university        String       @db.VarChar(255)
   course_duration_months  Int
   year_of_passing         Int
-  marks_total             String    @db.VarChar(50)
-  marks_obtained          String    @db.VarChar(50)
-  percentage              String?   @db.VarChar(20)
-  status                  Int?      @default(1)
-  created_at              DateTime? @default(now()) @db.Timestamp(6)
-  updated_at              DateTime? @default(now()) @db.Timestamp(6)
+  marks_total             String       @db.VarChar(50)
+  marks_obtained          String       @db.VarChar(50)
+  percentage              String?      @db.VarChar(20)
+  status                  Int?         @default(1)
+  created_at              DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at              DateTime?    @default(now()) @db.Timestamp(6)
+  application             applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model application_tracker {
-  id                         BigInt    @id @default(autoincrement())
+  id                         BigInt       @id @default(autoincrement())
   application_id             BigInt
-  basic_information          Int?      @default(0)
-  school_preference_posting  Int?      @default(0)
-  academic_qualification     Int?      @default(0)
-  professional_qualification Int?      @default(0)
-  experience                 Int?      @default(0)
-  upload_documents           Int?      @default(0)
-  preview                    Int?      @default(0)
-  declaration_submission     Int?      @default(0)
-  current_step               Int?      @default(1)
-  status                     Int?      @default(1)
-  created_at                 DateTime? @default(now()) @db.Timestamp(6)
-  updated_at                 DateTime? @default(now()) @db.Timestamp(6)
+  basic_information          Int?         @default(0)
+  school_preference_posting  Int?         @default(0)
+  academic_qualification     Int?         @default(0)
+  professional_qualification Int?         @default(0)
+  experience                 Int?         @default(0)
+  upload_documents           Int?         @default(0)
+  preview                    Int?         @default(0)
+  declaration_submission     Int?         @default(0)
+  current_step               Int?         @default(1)
+  status                     Int?         @default(1)
+  created_at                 DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at                 DateTime?    @default(now()) @db.Timestamp(6)
+  application                applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model applications {
+  application_id           BigInt                   @id @default(autoincrement())
+  first_name               String                   @db.VarChar(100)
+  middle_name              String?                  @db.VarChar(100)
+  last_name                String?                  @db.VarChar(100)
+  date_of_birth            DateTime                 @db.Date
+  gender                   Int
+  pan_no                   String?                  @db.VarChar(20)
+  aadhar_no                String?                  @db.VarChar(20)
+  category                 Int
+  marital_status           Int
+  contact_address          String
+  city                     String                   @db.VarChar(100)
+  state                    String                   @db.VarChar(100)
+  district                 String                   @db.VarChar(100)
+  phone_std                String?                  @db.VarChar(20)
+  mobile_no                String                   @db.VarChar(15)
+  email                    String                   @db.VarChar(150)
+  alternative_no           String?                  @db.VarChar(15)
+  password                 String                   @db.VarChar(255)
+  status                   Int?                     @default(1)
+  created_at               DateTime?                @default(now()) @db.Timestamp(6)
+  updated_at               DateTime?                @default(now()) @db.Timestamp(6)
+  know_hindi_english       Int?
+  know_computer            Int?
+  know_religional_language Int?
+  religional_language_name String?                  @db.VarChar(100)
+  academic_detail          academic_detail[]
+  application_tracker      application_tracker[]
+  experience_detail        experience_detail[]
+  school_and_post_choice   school_and_post_choice[]
+  upload_document          upload_document[]
+}
+
+model config_designation_post {
+  id                  Int       @id @default(autoincrement())
+  ro_id               Int
+  kv_id               Int
+  designation_subject String    @db.VarChar
+  no_of_post          Int
+  is_open             Int
+  interview_date      DateTime? @db.Date
+  created_at          DateTime? @default(now()) @db.Timestamp(6)
+  subject_id          Int?
+  designation_id      Int?
+
+  @@unique([kv_id, designation_subject], map: "unique_kv_designation_subject")
 }
 
 model experience_detail {
-  id                   BigInt    @id @default(autoincrement())
+  id                   BigInt       @id @default(autoincrement())
   application_id       BigInt
-  organization_name    String    @db.VarChar(255)
+  organization_name    String       @db.VarChar(255)
   designation          Int
-  start_date           DateTime  @db.Date
-  end_date             DateTime? @db.Date
-  currently_working    Boolean?  @default(false)
+  start_date           DateTime     @db.Date
+  end_date             DateTime?    @db.Date
+  currently_working    Boolean?     @default(false)
   key_responsibilities String
-  status               Int?      @default(1)
-  created_at           DateTime? @default(now()) @db.Timestamp(6)
-  updated_at           DateTime? @default(now()) @db.Timestamp(6)
+  status               Int?         @default(1)
+  created_at           DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at           DateTime?    @default(now()) @db.Timestamp(6)
+  application          applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model master_designations {
+  id           Int      @id(map: "ci_designations_pkey") @default(autoincrement())
+  rank         Int      @default(0)
+  cat_id       Int
+  name         String   @db.VarChar(255)
+  alias        String?  @db.VarChar(255)
+  code         Int      @unique(map: "unique_code")
+  empCategory  String?  @db.VarChar(5)
+  sanctionType Int?     @default(1) @db.SmallInt
+  contractFlag Int?     @db.SmallInt
+  active       Int      @default(1)
+  hq           Int?     @db.SmallInt
+  e1           Int?     @db.SmallInt
+  e2           Int?     @db.SmallInt
+  ro           Int?     @db.SmallInt
+  zt           Int?     @db.SmallInt
+  kv           Int?     @db.SmallInt
+  created      DateTime @default(now()) @db.Timestamp(6)
+  updated      DateTime @default(now()) @db.Timestamp(6)
 }
 
 model master_schools_kvs {
@@ -115,62 +188,65 @@ model master_states {
 }
 
 model school_and_post_choice {
-  id             BigInt    @id(map: "school_choice_post_pkey") @default(autoincrement())
+  id             BigInt       @id(map: "school_choice_post_pkey") @default(autoincrement())
   application_id BigInt
   school_id      Int
   kv_id          Int
-  post1          Int?
-  post2          Int?
-  post3          Int?
-  choice1        Int?
-  choice2        Int?
-  choice3        Int?
-  status         Int?      @default(1)
-  created_at     DateTime? @default(now()) @db.Timestamp(6)
-  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+  choice         Int?
+  status         Int?         @default(1)
+  created_at     DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at     DateTime?    @default(now()) @db.Timestamp(6)
+  state_id       BigInt?
+  designation_id Int?
+  subject_id     Int?
+  ro_id          Int?
+  application    applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model upload_document {
-  id             BigInt    @id @default(autoincrement())
+  id             BigInt       @id @default(autoincrement())
   application_id BigInt
-  photo          String?   @db.VarChar(255)
-  pan_card       String?   @db.VarChar(255)
-  aadhar_card    String?   @db.VarChar(255)
-  marksheet1     String?   @db.VarChar(255)
-  marksheet2     String?   @db.VarChar(255)
-  marksheet3     String?   @db.VarChar(255)
-  marksheet4     String?   @db.VarChar(255)
-  marksheet5     String?   @db.VarChar(255)
-  degree1        String?   @db.VarChar(255)
-  degree2        String?   @db.VarChar(255)
-  degree3        String?   @db.VarChar(255)
-  degree4        String?   @db.VarChar(255)
-  degree5        String?   @db.VarChar(255)
-  status         Int?      @default(1)
-  created_at     DateTime? @default(now()) @db.Timestamp(6)
-  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+  photo          String?      @db.VarChar(255)
+  pan_card       String?      @db.VarChar(255)
+  aadhar_card    String?      @db.VarChar(255)
+  status         Int?         @default(1)
+  created_at     DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at     DateTime?    @default(now()) @db.Timestamp(6)
+  all_document   String?      @db.VarChar(255)
+  application    applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model applications {
+model config_app_invitation_date {
+  id         Int       @id @default(autoincrement())
+  ro_id      Int
+  kv_id      Int       @unique
+  start_date DateTime? @db.Date
+  end_date   DateTime? @db.Date
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model master_subjects {
+  id             Int      @id(map: "ci_subjects_pkey") @default(autoincrement())
+  name           String   @db.VarChar(100)
+  alias          String?  @db.VarChar(100)
+  subjectCode_10 String?  @db.VarChar(15)
+  subjectCode_12 String?  @db.VarChar(15)
+  in_classes     String?  @db.VarChar(50)
+  in_desig       String?  @db.VarChar(50)
+  status         Int      @db.SmallInt
+  created        DateTime @default(now()) @db.Timestamp(6)
+  updated        DateTime @default(now()) @db.Timestamp(6)
+}
+
+model professional_qualifications {
   id              BigInt    @id @default(autoincrement())
-  first_name      String    @db.VarChar(100)
-  middle_name     String?   @db.VarChar(100)
-  last_name       String?   @db.VarChar(100)
-  date_of_birth   DateTime  @db.Date
-  gender          Int
-  pan_no          String?   @db.VarChar(20)
-  aadhar_no       String?   @db.VarChar(20)
-  category        Int
-  marital_status  Int
-  contact_address String
-  city            String    @db.VarChar(100)
-  state           String    @db.VarChar(100)
-  district        String    @db.VarChar(100)
-  phone_std       String?   @db.VarChar(20)
-  mobile_no       String    @db.VarChar(15)
-  email           String    @db.VarChar(150)
-  alternative_no  String?   @db.VarChar(15)
-  password        String    @db.VarChar(255)
+  application_id  BigInt
+  qualification   Int
+  subject         String    @db.VarChar(255)
+  qualifying_year Int
+  maximum_marks   String    @db.VarChar(50)
+  marks_obtained  String    @db.VarChar(50)
+  percentage      String?   @db.VarChar(20)
   status          Int?      @default(1)
   created_at      DateTime? @default(now()) @db.Timestamp(6)
   updated_at      DateTime? @default(now()) @db.Timestamp(6)
