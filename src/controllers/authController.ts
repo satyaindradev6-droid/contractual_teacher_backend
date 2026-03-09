@@ -146,32 +146,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
 
     const user = await prisma.applications.findUnique({
       where: { application_id: BigInt(userId) },
-      select: {
-        application_id: true,
-        first_name: true,
-        middle_name: true,
-        last_name: true,
-        date_of_birth: true,
-        gender: true,
-        pan_no: true,
-        aadhar_no: true,
-        category: true,
-        marital_status: true,
-        contact_address: true,
-        city: true,
-        state: true,
-        district: true,
-        phone_std: true,
-        mobile_no: true,
-        email: true,
-        alternative_no: true,
-        know_hindi_english: true,
-        know_computer: true,
-        know_religional_language: true,
-        religional_language_name: true,
-        status: true,
-        created_at: true,
-        updated_at: true,
+      include: {
         academic_detail: {
           where: { status: 1 },
           orderBy: { year_of_passing: 'desc' }
