@@ -11,6 +11,7 @@ import statesRoutes from './routes/statesRoutes';
 import schoolRoutes from './routes/schoolRoutes';
 import designationPostRoutes from './routes/designationPostRoutes';
 import professionalQualificationRoutes from './routes/professionalQualificationRoutes';
+import applicationTrackerRoutes from './routes/applicationTrackerRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -51,6 +52,9 @@ app.use('/api', designationPostRoutes);
 
 // Professional qualification routes
 app.use('/api/professional-qualification', professionalQualificationRoutes);
+
+// Application tracker routes
+app.use('/api/application-tracker', applicationTrackerRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
