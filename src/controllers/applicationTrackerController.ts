@@ -106,13 +106,6 @@ export const updateApplicationTracker = async (req: Request, res: Response) => {
       }
     });
 
-    if (!existingTracker) {
-      return res.status(404).json({
-        success: false,
-        message: 'Application tracker not found'
-      });
-    }
-
     // Build update data
     const updateData: any = {
       updated_at: new Date()
@@ -129,15 +122,36 @@ export const updateApplicationTracker = async (req: Request, res: Response) => {
     if (current_step !== undefined) updateData.current_step = parseInt(current_step);
     if (status !== undefined) updateData.status = parseInt(status);
 
-    // Update tracker
-    const updatedTracker = await prisma.application_tracker.update({
-      where: { id: existingTracker.id },
-      data: updateData
-    });
+    let updatedTracker;
+
+    if (!existingTracker) {
+      // Create new tracker if it doesn't exist
+      updatedTracker = await prisma.application_tracker.create({
+        data: {
+          application_id: BigInt(application_id),
+          basic_information: updateData.basic_information ?? 0,
+          school_preference_posting: updateData.school_preference_posting ?? 0,
+          academic_qualification: updateData.academic_qualification ?? 0,
+          professional_qualification: updateData.professional_qualification ?? 0,
+          experience: updateData.experience ?? 0,
+          upload_documents: updateData.upload_documents ?? 0,
+          preview: updateData.preview ?? 0,
+          declaration_submission: updateData.declaration_submission ?? 0,
+          current_step: updateData.current_step ?? 1,
+          status: updateData.status ?? 1
+        }
+      });
+    } else {
+      // Update existing tracker
+      updatedTracker = await prisma.application_tracker.update({
+        where: { id: existingTracker.id },
+        data: updateData
+      });
+    }
 
     res.json({
       success: true,
-      message: 'Application tracker updated successfully',
+      message: existingTracker ? 'Application tracker updated successfully' : 'Application tracker created successfully',
       data: {
         id: updatedTracker.id.toString(),
         application_id: updatedTracker.application_id.toString(),

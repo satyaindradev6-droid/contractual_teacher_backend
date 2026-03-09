@@ -12,6 +12,7 @@ import schoolRoutes from './routes/schoolRoutes';
 import designationPostRoutes from './routes/designationPostRoutes';
 import professionalQualificationRoutes from './routes/professionalQualificationRoutes';
 import applicationTrackerRoutes from './routes/applicationTrackerRoutes';
+import submitApplicationRoutes from './routes/submitApplicationRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -55,6 +56,9 @@ app.use('/api/professional-qualification', professionalQualificationRoutes);
 
 // Application tracker routes
 app.use('/api/application-tracker', applicationTrackerRoutes);
+
+// Submit application routes
+app.use('/api/submit-application', submitApplicationRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
