@@ -50,7 +50,7 @@ export const submitApplication = async (req: Request, res: Response) => {
         where: { id: existingSubmission.id },
         data: submissionData
       });
-      
+
       console.log('Updated submission:', result);
     } else {
       // Create new submission
@@ -60,7 +60,7 @@ export const submitApplication = async (req: Request, res: Response) => {
           ...submissionData
         }
       });
-      
+
       console.log('Created new submission:', result);
     }
 

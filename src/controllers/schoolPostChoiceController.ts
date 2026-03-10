@@ -90,8 +90,8 @@ export const createSchoolPostChoice = async (req: Request, res: Response) => {
 
     res.status(isUpdate ? 200 : 201).json({
       success: true,
-      message: isUpdate 
-        ? 'School and post choice replaced successfully' 
+      message: isUpdate
+        ? 'School and post choice replaced successfully'
         : 'School and post choice created successfully',
       data: {
         id: schoolPostChoice.id.toString(),

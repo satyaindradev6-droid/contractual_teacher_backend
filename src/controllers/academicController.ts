@@ -15,7 +15,8 @@ export const createAcademic = async (req: Request, res: Response) => {
       year_of_passing,
       marks_total,
       marks_obtained,
-      percentage
+      percentage,
+      grade_system
     } = req.body;
 
     // Validate required fields
@@ -26,12 +27,24 @@ export const createAcademic = async (req: Request, res: Response) => {
       });
     }
 
-    if (!qualification || !course_type || !subjects_specialization || 
-        !board_university || !course_duration_months || !year_of_passing || 
-        !marks_total || !marks_obtained) {
+    if (!qualification || !course_type || !subjects_specialization ||
+      !board_university || !course_duration_months || !year_of_passing ||
+      !marks_total || !marks_obtained) {
       return res.status(400).json({
         success: false,
         message: 'All required fields must be provided'
+      });
+    }
+
+    // Verify application exists
+    const existingApplication = await prisma.applications.findUnique({
+      where: { application_id: BigInt(application_id) }
+    });
+
+    if (!existingApplication) {
+      return res.status(404).json({
+        success: false,
+        message: 'Application not found'
       });
     }
 
@@ -40,7 +53,7 @@ export const createAcademic = async (req: Request, res: Response) => {
       data: {
         application_id: BigInt(application_id),
         qualification: parseInt(qualification),
-        course: course ? parseInt(course) : null,
+        course: course !== undefined && course !== null ? parseInt(course) : null,
         course_type: parseInt(course_type),
         subjects_specialization,
         board_university,
@@ -49,6 +62,7 @@ export const createAcademic = async (req: Request, res: Response) => {
         marks_total,
         marks_obtained,
         percentage: percentage || null,
+        grade_system: grade_system !== undefined && grade_system !== null ? parseInt(grade_system) : null,
         status: 1
       }
     });
@@ -69,6 +83,7 @@ export const createAcademic = async (req: Request, res: Response) => {
         marks_total: academic.marks_total,
         marks_obtained: academic.marks_obtained,
         percentage: academic.percentage,
+        grade_system: academic.grade_system,
         status: academic.status,
         created_at: academic.created_at,
         updated_at: academic.updated_at
@@ -122,6 +137,7 @@ export const getAcademicsByApplicationId = async (req: Request, res: Response) =
         marks_total: academic.marks_total,
         marks_obtained: academic.marks_obtained,
         percentage: academic.percentage,
+        grade_system: academic.grade_system,
         status: academic.status,
         created_at: academic.created_at,
         updated_at: academic.updated_at
@@ -175,6 +191,7 @@ export const getAcademicById = async (req: Request, res: Response) => {
         marks_total: academic.marks_total,
         marks_obtained: academic.marks_obtained,
         percentage: academic.percentage,
+        grade_system: academic.grade_system,
         status: academic.status,
         created_at: academic.created_at,
         updated_at: academic.updated_at
@@ -204,7 +221,8 @@ export const updateAcademic = async (req: Request, res: Response) => {
       year_of_passing,
       marks_total,
       marks_obtained,
-      percentage
+      percentage,
+      grade_system
     } = req.body;
 
     if (!id) {
@@ -227,12 +245,25 @@ export const updateAcademic = async (req: Request, res: Response) => {
     }
 
     // Build update data
-    const updateData: any = {
+    const updateData: Partial<{
+      qualification: number;
+      course: number | null;
+      course_type: number;
+      subjects_specialization: string;
+      board_university: string;
+      course_duration_months: number;
+      year_of_passing: number;
+      marks_total: string;
+      marks_obtained: string;
+      percentage: string | null;
+      grade_system: number | null;
+      updated_at: Date;
+    }> = {
       updated_at: new Date()
     };
 
     if (qualification !== undefined) updateData.qualification = parseInt(qualification);
-    if (course !== undefined) updateData.course = parseInt(course);
+    if (course !== undefined) updateData.course = course ? parseInt(course) : null;
     if (course_type !== undefined) updateData.course_type = parseInt(course_type);
     if (subjects_specialization !== undefined) updateData.subjects_specialization = subjects_specialization;
     if (board_university !== undefined) updateData.board_university = board_university;
@@ -241,6 +272,7 @@ export const updateAcademic = async (req: Request, res: Response) => {
     if (marks_total !== undefined) updateData.marks_total = marks_total;
     if (marks_obtained !== undefined) updateData.marks_obtained = marks_obtained;
     if (percentage !== undefined) updateData.percentage = percentage;
+    if (grade_system !== undefined) updateData.grade_system = grade_system !== null ? parseInt(grade_system) : null;
 
     // Update academic
     const updatedAcademic = await prisma.academic_detail.update({
@@ -264,6 +296,7 @@ export const updateAcademic = async (req: Request, res: Response) => {
         marks_total: updatedAcademic.marks_total,
         marks_obtained: updatedAcademic.marks_obtained,
         percentage: updatedAcademic.percentage,
+        grade_system: updatedAcademic.grade_system,
         status: updatedAcademic.status,
         created_at: updatedAcademic.created_at,
         updated_at: updatedAcademic.updated_at

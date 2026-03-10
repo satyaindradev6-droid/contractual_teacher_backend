@@ -10,7 +10,7 @@ export const uploadDocuments = async (req: Request, res: Response) => {
   console.log('Content-Type:', req.get('content-type'));
   console.log('Request body:', req.body);
   console.log('Request files:', req.files);
-  
+
   try {
     const { application_id } = req.body;
 
@@ -59,14 +59,14 @@ export const uploadDocuments = async (req: Request, res: Response) => {
     if (files.all_document && files.all_document[0]) {
       const fileSize = files.all_document[0].size;
       const maxSize = 200 * 1024; // 200 KB
-      
+
       if (fileSize > maxSize) {
         // Delete the uploaded file
         const filePath = files.all_document[0].path;
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
         }
-        
+
         return res.status(400).json({
           status: false,
           message: 'all_document file size exceeds 200 KB limit'
@@ -121,7 +121,7 @@ export const uploadDocuments = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('Upload error:', error);
     console.error('Error stack:', error.stack);
-    
+
     // Handle multer file size error
     if (error.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
@@ -129,7 +129,7 @@ export const uploadDocuments = async (req: Request, res: Response) => {
         message: 'File size exceeds 200 KB limit'
       });
     }
-    
+
     return res.status(500).json({
       status: false,
       message: 'Internal server error'
