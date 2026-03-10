@@ -201,6 +201,26 @@ export const getKVPostData = async (req: Request, res: Response) => {
       });
     }
 
+    // ✅ NEW CONDITION (check invitation date)
+    const invitation = await prisma.config_app_invitation_date.findFirst({
+      where: {
+        kv_id,
+        start_date: { lte: new Date() },
+        end_date: { gte: new Date() }
+      }
+    });
+
+    if (!invitation) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          designations: [],
+          subjects: []
+        }
+      });
+    }
+
+    // 🔽 OLD LOGIC STARTS (unchanged)
     // Fetch config records where is_open = 1
     const configPosts = await prisma.config_designation_post.findMany({
       where: {

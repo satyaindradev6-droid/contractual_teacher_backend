@@ -11,7 +11,8 @@ export const createProfessionalQualification = async (req: Request, res: Respons
       qualifying_year,
       maximum_marks,
       marks_obtained,
-      percentage
+      percentage,
+      grade_system
     } = req.body;
 
     // Validate required fields
@@ -40,6 +41,7 @@ export const createProfessionalQualification = async (req: Request, res: Respons
         maximum_marks,
         marks_obtained,
         percentage: percentage || null,
+        grade_system: grade_system ? parseInt(grade_system) : null,
         status: 1
       }
     });
@@ -56,6 +58,7 @@ export const createProfessionalQualification = async (req: Request, res: Respons
         maximum_marks: professionalQualification.maximum_marks,
         marks_obtained: professionalQualification.marks_obtained,
         percentage: professionalQualification.percentage,
+        grade_system: professionalQualification.grade_system,
         status: professionalQualification.status,
         created_at: professionalQualification.created_at,
         updated_at: professionalQualification.updated_at
@@ -105,6 +108,7 @@ export const getProfessionalQualificationsByApplicationId = async (req: Request,
         maximum_marks: qual.maximum_marks,
         marks_obtained: qual.marks_obtained,
         percentage: qual.percentage,
+        grade_system: qual.grade_system,
         status: qual.status,
         created_at: qual.created_at,
         updated_at: qual.updated_at
@@ -154,6 +158,7 @@ export const getProfessionalQualificationById = async (req: Request, res: Respon
         maximum_marks: qualification.maximum_marks,
         marks_obtained: qualification.marks_obtained,
         percentage: qualification.percentage,
+        grade_system: qualification.grade_system,
         status: qualification.status,
         created_at: qualification.created_at,
         updated_at: qualification.updated_at
@@ -179,7 +184,8 @@ export const updateProfessionalQualification = async (req: Request, res: Respons
       qualifying_year,
       maximum_marks,
       marks_obtained,
-      percentage
+      percentage,
+      grade_system
     } = req.body;
 
     if (!id) {
@@ -212,6 +218,7 @@ export const updateProfessionalQualification = async (req: Request, res: Respons
     if (maximum_marks !== undefined) updateData.maximum_marks = maximum_marks;
     if (marks_obtained !== undefined) updateData.marks_obtained = marks_obtained;
     if (percentage !== undefined) updateData.percentage = percentage;
+    if (grade_system !== undefined) updateData.grade_system = grade_system ? parseInt(grade_system) : null;
 
     // Update qualification
     const updatedQualification = await prisma.professional_qualifications.update({
@@ -231,6 +238,7 @@ export const updateProfessionalQualification = async (req: Request, res: Respons
         maximum_marks: updatedQualification.maximum_marks,
         marks_obtained: updatedQualification.marks_obtained,
         percentage: updatedQualification.percentage,
+        grade_system: updatedQualification.grade_system,
         status: updatedQualification.status,
         created_at: updatedQualification.created_at,
         updated_at: updatedQualification.updated_at

@@ -223,6 +223,7 @@ model professional_qualifications {
   status          Int?      @default(1)
   created_at      DateTime? @default(now()) @db.Timestamp(6)
   updated_at      DateTime? @default(now()) @db.Timestamp(6)
+  grade_system    Int?
 }
 
 model school_and_post_choice {

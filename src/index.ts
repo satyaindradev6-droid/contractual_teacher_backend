@@ -13,6 +13,7 @@ import designationPostRoutes from './routes/designationPostRoutes';
 import professionalQualificationRoutes from './routes/professionalQualificationRoutes';
 import applicationTrackerRoutes from './routes/applicationTrackerRoutes';
 import submitApplicationRoutes from './routes/submitApplicationRoutes';
+import invitationRoutes from './routes/invitationRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -27,6 +28,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 }));
 app.use(express.json());
+
+// Serve static files from contractual_upload directory
+app.use('/contractual_upload', express.static('contractual_upload'));
 
 // Auth routes
 app.use('/api/auth', authRoutes);
@@ -63,6 +67,9 @@ app.use('/api/application-tracker', applicationTrackerRoutes);
 
 // Submit application routes
 app.use('/api/submit-application', submitApplicationRoutes);
+
+// Invitation eligibility routes
+app.use('/api/invitation', invitationRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

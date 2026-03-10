@@ -8,16 +8,25 @@ export const getUploadPaths = (applicationId: string | number) => {
   const end = start + 999;
   const rangeFolder = `${start}-${end}`;
   
-  // Filesystem path (relative to project root)
+  // Filesystem path (relative to project root) - for storing files
   const filesystemPath = path.join('contractual_upload', rangeFolder, applicationId.toString());
   
-  // Public URL path (for browser access)
-  const publicUrlPath = `/uploads/${rangeFolder}/${applicationId}`;
+  // Public path (for URL generation) - matches the static middleware path
+  const publicPath = `contractual_upload/${rangeFolder}/${applicationId}`;
   
   return {
     filesystemPath,
-    publicUrlPath,
+    publicPath,
     rangeFolder,
     applicationId: applicationId.toString()
   };
+};
+
+export const generateDocumentUrl = (applicationId: string | number, filename: string): string => {
+  if (!filename) return '';
+  
+  const { publicPath } = getUploadPaths(applicationId);
+  const baseUrl = process.env.FILE_BASE_URL || 'http://localhost:8000';
+  
+  return `${baseUrl}/${publicPath}/${filename}`;
 };

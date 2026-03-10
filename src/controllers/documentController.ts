@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
 import fs from 'fs';
 import path from 'path';
-import { getUploadPaths } from '../utils/helper';
+import { getUploadPaths, generateDocumentUrl } from '../utils/helper';
 
 export const uploadDocuments = async (req: Request, res: Response) => {
   console.log('=== UPLOAD REQUEST STARTED ===');
@@ -172,17 +172,12 @@ export const getDocuments = async (req: Request, res: Response) => {
       });
     }
 
-    // Convert BigInt to string for JSON serialization
+    // Generate full URLs for each document
     const documentsData = {
-      id: documents.id.toString(),
-      application_id: documents.application_id.toString(),
-      photo: documents.photo,
-      pan_card: documents.pan_card,
-      aadhar_card: documents.aadhar_card,
-      all_document: documents.all_document,
-      status: documents.status,
-      created_at: documents.created_at,
-      updated_at: documents.updated_at
+      photo: documents.photo ? generateDocumentUrl(application_id, documents.photo) : null,
+      pan_card: documents.pan_card ? generateDocumentUrl(application_id, documents.pan_card) : null,
+      aadhar_card: documents.aadhar_card ? generateDocumentUrl(application_id, documents.aadhar_card) : null,
+      all_document: documents.all_document ? generateDocumentUrl(application_id, documents.all_document) : null
     };
 
     return res.status(200).json({
