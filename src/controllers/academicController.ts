@@ -26,7 +26,7 @@ export const createAcademic = async (req: Request, res: Response) => {
       });
     }
 
-    if (!qualification || !course || !course_type || !subjects_specialization || 
+    if (!qualification || !course_type || !subjects_specialization || 
         !board_university || !course_duration_months || !year_of_passing || 
         !marks_total || !marks_obtained) {
       return res.status(400).json({
@@ -40,7 +40,7 @@ export const createAcademic = async (req: Request, res: Response) => {
       data: {
         application_id: BigInt(application_id),
         qualification: parseInt(qualification),
-        course: parseInt(course),
+        course: course ? parseInt(course) : null,
         course_type: parseInt(course_type),
         subjects_specialization,
         board_university,

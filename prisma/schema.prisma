@@ -77,6 +77,7 @@ model applications {
   experience_detail        experience_detail[]
   school_and_post_choice   school_and_post_choice[]
   upload_document          upload_document[]
+  submit_application       submit_application?
 }
 
 model config_app_invitation_date {
@@ -241,14 +242,15 @@ model school_and_post_choice {
 }
 
 model submit_application {
-  id             BigInt    @id @default(autoincrement())
-  application_id BigInt
-  submission_id  String?   @db.VarChar(255)
-  is_submitted   Int?      @default(0)
-  submitted_at   DateTime? @db.Timestamp(6)
-  status         Int?      @default(1)
-  created_at     DateTime? @default(now()) @db.Timestamp(6)
-  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+  id             BigInt       @id @default(autoincrement())
+  application_id BigInt       @unique
+  submission_id  String?      @db.VarChar(255)
+  is_submitted   Int?         @default(0)
+  submitted_at   DateTime?    @db.Timestamp(6)
+  status         Int?         @default(1)
+  created_at     DateTime?    @default(now()) @db.Timestamp(6)
+  updated_at     DateTime?    @default(now()) @db.Timestamp(6)
+  applications   applications @relation(fields: [application_id], references: [application_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model upload_document {

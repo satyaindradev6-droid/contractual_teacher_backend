@@ -5,6 +5,7 @@ export const submitApplication = async (req: Request, res: Response) => {
   try {
     const { application_id, is_submitted } = req.body;
 
+    // Validate input
     if (!application_id) {
       return res.status(400).json({
         success: false,
@@ -12,9 +13,12 @@ export const submitApplication = async (req: Request, res: Response) => {
       });
     }
 
+    // Convert to BigInt safely
+    const appIdBigInt = BigInt(application_id);
+
     // Check if application exists
     const application = await prisma.applications.findUnique({
-      where: { application_id: BigInt(application_id) }
+      where: { application_id: appIdBigInt }
     });
 
     if (!application) {
@@ -29,31 +33,35 @@ export const submitApplication = async (req: Request, res: Response) => {
 
     // Check if submission already exists
     const existingSubmission = await prisma.submit_application.findFirst({
-      where: { application_id: BigInt(application_id) }
+      where: { application_id: appIdBigInt }
     });
+
+    const submissionData = {
+      submission_id: generatedSubmissionId,
+      is_submitted: is_submitted !== undefined ? Number(is_submitted) : 0,
+      submitted_at: is_submitted === 1 ? new Date() : null,
+      updated_at: new Date()
+    };
 
     let result;
     if (existingSubmission) {
       // Update existing submission
       result = await prisma.submit_application.update({
         where: { id: existingSubmission.id },
-        data: {
-          submission_id: generatedSubmissionId,
-          is_submitted: is_submitted !== undefined ? is_submitted : existingSubmission.is_submitted,
-          submitted_at: is_submitted === 1 ? new Date() : existingSubmission.submitted_at,
-          updated_at: new Date()
-        }
+        data: submissionData
       });
+      
+      console.log('Updated submission:', result);
     } else {
       // Create new submission
       result = await prisma.submit_application.create({
         data: {
-          application_id: BigInt(application_id),
-          submission_id: generatedSubmissionId,
-          is_submitted: is_submitted || 0,
-          submitted_at: is_submitted === 1 ? new Date() : null
+          application_id: appIdBigInt,
+          ...submissionData
         }
       });
+      
+      console.log('Created new submission:', result);
     }
 
     res.status(200).json({
@@ -72,9 +80,11 @@ export const submitApplication = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Submit application error:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     res.status(500).json({
       success: false,
-      message: 'Failed to submit application'
+      message: 'Failed to submit application',
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 };

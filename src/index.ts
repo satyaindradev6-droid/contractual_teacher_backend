@@ -18,7 +18,11 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 app.use(cors({
-  origin: 'http://localhost:9000',
+  origin: [
+    'http://localhost:9000',
+    'https://samvida-sathi.kvs.gov.in',
+    'http://164.100.229.94'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 }));
