@@ -90,16 +90,18 @@ model config_app_invitation_date {
 }
 
 model config_designation_post {
-  id                  Int       @id @default(autoincrement())
+  id                  Int                  @id @default(autoincrement())
   ro_id               Int
   kv_id               Int
-  designation_subject String    @db.VarChar
+  designation_subject String               @db.VarChar
   no_of_post          Int
   is_open             Int
-  interview_date      DateTime? @db.Date
-  created_at          DateTime? @default(now()) @db.Timestamp(6)
+  interview_date      DateTime?            @db.Date
+  created_at          DateTime?            @default(now()) @db.Timestamp(6)
   subject_id          Int?
   designation_id      Int?
+  master_designations master_designations? @relation(fields: [designation_id], references: [id], onUpdate: NoAction, map: "fk_config_designation")
+  master_subjects     master_subjects?     @relation(fields: [subject_id], references: [id], onUpdate: NoAction, map: "fk_config_subject")
 
   @@unique([kv_id, designation_subject], map: "unique_kv_designation_subject")
 }
@@ -120,24 +122,25 @@ model experience_detail {
 }
 
 model master_designations {
-  id           Int      @id(map: "ci_designations_pkey") @default(autoincrement())
-  rank         Int      @default(0)
-  cat_id       Int
-  name         String   @db.VarChar(255)
-  alias        String?  @db.VarChar(255)
-  code         Int      @unique(map: "unique_code")
-  empCategory  String?  @db.VarChar(5)
-  sanctionType Int?     @default(1) @db.SmallInt
-  contractFlag Int?     @db.SmallInt
-  active       Int      @default(1)
-  hq           Int?     @db.SmallInt
-  e1           Int?     @db.SmallInt
-  e2           Int?     @db.SmallInt
-  ro           Int?     @db.SmallInt
-  zt           Int?     @db.SmallInt
-  kv           Int?     @db.SmallInt
-  created      DateTime @default(now()) @db.Timestamp(6)
-  updated      DateTime @default(now()) @db.Timestamp(6)
+  id                      Int                       @id(map: "ci_designations_pkey") @default(autoincrement())
+  rank                    Int                       @default(0)
+  cat_id                  Int
+  name                    String                    @db.VarChar(255)
+  alias                   String?                   @db.VarChar(255)
+  code                    Int                       @unique(map: "unique_code")
+  empCategory             String?                   @db.VarChar(5)
+  sanctionType            Int?                      @default(1) @db.SmallInt
+  contractFlag            Int?                      @db.SmallInt
+  active                  Int                       @default(1)
+  hq                      Int?                      @db.SmallInt
+  e1                      Int?                      @db.SmallInt
+  e2                      Int?                      @db.SmallInt
+  ro                      Int?                      @db.SmallInt
+  zt                      Int?                      @db.SmallInt
+  kv                      Int?                      @db.SmallInt
+  created                 DateTime                  @default(now()) @db.Timestamp(6)
+  updated                 DateTime                  @default(now()) @db.Timestamp(6)
+  config_designation_post config_designation_post[]
 }
 
 model master_schools_kvs {
@@ -199,16 +202,17 @@ model master_states {
 }
 
 model master_subjects {
-  id             Int      @id(map: "ci_subjects_pkey") @default(autoincrement())
-  name           String   @db.VarChar(100)
-  alias          String?  @db.VarChar(100)
-  subjectCode_10 String?  @db.VarChar(15)
-  subjectCode_12 String?  @db.VarChar(15)
-  in_classes     String?  @db.VarChar(50)
-  in_desig       String?  @db.VarChar(50)
-  status         Int      @db.SmallInt
-  created        DateTime @default(now()) @db.Timestamp(6)
-  updated        DateTime @default(now()) @db.Timestamp(6)
+  id                      Int                       @id(map: "ci_subjects_pkey") @default(autoincrement())
+  name                    String                    @db.VarChar(100)
+  alias                   String?                   @db.VarChar(100)
+  subjectCode_10          String?                   @db.VarChar(15)
+  subjectCode_12          String?                   @db.VarChar(15)
+  in_classes              String?                   @db.VarChar(50)
+  in_desig                String?                   @db.VarChar(50)
+  status                  Int                       @db.SmallInt
+  created                 DateTime                  @default(now()) @db.Timestamp(6)
+  updated                 DateTime                  @default(now()) @db.Timestamp(6)
+  config_designation_post config_designation_post[]
 }
 
 model professional_qualifications {

@@ -95,34 +95,21 @@ export const getDesignationsByKV = async (req: Request, res: Response) => {
       });
     }
 
-    const configPosts = await prisma.config_designation_post.findMany({
+    // Much cleaner - directly use designation_id column
+    const designations = await prisma.master_designations.findMany({
       where: {
-        kv_id,
-        is_open: 1
+        config_designation_post: {
+          some: {
+            kv_id,
+            is_open: 1
+          }
+        }
       },
       select: {
-        designation_subject: true,
-        designation_id: true
+        id: true,
+        name: true
       }
     });
-
-    const uniqueDesignationIds = new Set<number>();
-
-    configPosts.forEach(post => {
-      // Parse from designation_subject string first
-      if (post.designation_subject) {
-        const parts = post.designation_subject.split('-');
-        if (parts.length === 2) {
-          const desigId = parseInt(parts[0]);
-          if (!isNaN(desigId)) uniqueDesignationIds.add(desigId);
-        }
-      } else if (post.designation_id !== null) {
-        // Fallback to designation_id column if designation_subject is empty
-        uniqueDesignationIds.add(post.designation_id);
-      }
-    });
-
-    const designations = Array.from(uniqueDesignationIds).map(id => ({ designation_id: id }));
 
     return res.status(200).json({
       success: true,
@@ -148,34 +135,21 @@ export const getSubjectsByKV = async (req: Request, res: Response) => {
       });
     }
 
-    const configPosts = await prisma.config_designation_post.findMany({
+    // Much cleaner - directly use subject_id column
+    const subjects = await prisma.master_subjects.findMany({
       where: {
-        kv_id,
-        is_open: 1
+        config_designation_post: {
+          some: {
+            kv_id,
+            is_open: 1
+          }
+        }
       },
       select: {
-        designation_subject: true,
-        subject_id: true
+        id: true,
+        name: true
       }
     });
-
-    const uniqueSubjectIds = new Set<number>();
-
-    configPosts.forEach(post => {
-      // Parse from designation_subject string first
-      if (post.designation_subject) {
-        const parts = post.designation_subject.split('-');
-        if (parts.length === 2) {
-          const subjId = parseInt(parts[1]);
-          if (!isNaN(subjId)) uniqueSubjectIds.add(subjId);
-        }
-      } else if (post.subject_id !== null) {
-        // Fallback to subject_id column if designation_subject is empty
-        uniqueSubjectIds.add(post.subject_id);
-      }
-    });
-
-    const subjects = Array.from(uniqueSubjectIds).map(id => ({ subject_id: id }));
 
     return res.status(200).json({
       success: true,
@@ -201,7 +175,7 @@ export const getKVPostData = async (req: Request, res: Response) => {
       });
     }
 
-    // ✅ NEW CONDITION (check invitation date)
+    // Check invitation date
     const invitation = await prisma.config_app_invitation_date.findFirst({
       where: {
         kv_id,
@@ -220,61 +194,15 @@ export const getKVPostData = async (req: Request, res: Response) => {
       });
     }
 
-    // 🔽 OLD LOGIC STARTS (unchanged)
-    // Fetch config records where is_open = 1
-    const configPosts = await prisma.config_designation_post.findMany({
-      where: {
-        kv_id,
-        is_open: 1
-      },
-      select: {
-        designation_subject: true,
-        designation_id: true,
-        subject_id: true
-      }
-    });
-
-    if (configPosts.length === 0) {
-      return res.status(200).json({
-        success: true,
-        data: {
-          designations: [],
-          subjects: []
-        }
-      });
-    }
-
-    // Extract unique designation and subject IDs
-    const uniqueDesignationIds = new Set<number>();
-    const uniqueSubjectIds = new Set<number>();
-
-    configPosts.forEach(post => {
-      // Parse from designation_subject string (format: "designation_id-subject_id")
-      if (post.designation_subject) {
-        const parts = post.designation_subject.split('-');
-        if (parts.length === 2) {
-          const desigId = parseInt(parts[0]);
-          const subjId = parseInt(parts[1]);
-          if (!isNaN(desigId)) uniqueDesignationIds.add(desigId);
-          if (!isNaN(subjId)) uniqueSubjectIds.add(subjId);
-        }
-      }
-      
-      // Also check individual columns as fallback (if designation_subject is empty)
-      if (!post.designation_subject) {
-        if (post.designation_id !== null) {
-          uniqueDesignationIds.add(post.designation_id);
-        }
-        if (post.subject_id !== null) {
-          uniqueSubjectIds.add(post.subject_id);
-        }
-      }
-    });
-
-    // Fetch designation details
+    // Much cleaner approach - use Prisma relations directly
     const designations = await prisma.master_designations.findMany({
       where: {
-        id: { in: Array.from(uniqueDesignationIds) }
+        config_designation_post: {
+          some: {
+            kv_id,
+            is_open: 1
+          }
+        }
       },
       select: {
         id: true,
@@ -282,10 +210,14 @@ export const getKVPostData = async (req: Request, res: Response) => {
       }
     });
 
-    // Fetch subject details
     const subjects = await prisma.master_subjects.findMany({
       where: {
-        id: { in: Array.from(uniqueSubjectIds) }
+        config_designation_post: {
+          some: {
+            kv_id,
+            is_open: 1
+          }
+        }
       },
       select: {
         id: true,
@@ -305,6 +237,81 @@ export const getKVPostData = async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       message: 'Internal server error'
+    });
+  }
+};
+export const getSubjectsByDesignation = async (req: Request, res: Response) => {
+  try {
+    const kv_id = parseInt(req.params.kv_id);
+    const { designation_id } = req.body;
+
+    if (isNaN(kv_id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid kv_id parameter"
+      });
+    }
+
+    if (!designation_id) {
+      return res.status(400).json({
+        success: false,
+        message: "designation_id is required"
+      });
+    }
+
+    // Debug: First check what config records exist
+    const configRecords = await prisma.config_designation_post.findMany({
+      where: {
+        kv_id,
+        designation_id,
+        is_open: 1
+      },
+      select: {
+        id: true,
+        subject_id: true,
+        designation_subject: true
+      }
+    });
+
+    console.log(`🔍 Debug - Config records for kv_id: ${kv_id}, designation_id: ${designation_id}:`, configRecords);
+
+    // Filter out records with null subject_id
+    const validSubjectIds = configRecords
+      .filter(record => record.subject_id !== null)
+      .map(record => record.subject_id);
+
+    console.log(`🔍 Debug - Valid subject IDs:`, validSubjectIds);
+
+    if (validSubjectIds.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: []
+      });
+    }
+
+    const subjects = await prisma.master_subjects.findMany({
+      where: {
+        id: { in: validSubjectIds }
+      },
+      distinct: ['id'],
+      select: {
+        id: true,
+        name: true
+      }
+    });
+
+    console.log(`🔍 Debug - Final subjects:`, subjects);
+
+    return res.status(200).json({
+      success: true,
+      data: subjects
+    });
+
+  } catch (error) {
+    console.error("Error fetching subjects by designation:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
     });
   }
 };
