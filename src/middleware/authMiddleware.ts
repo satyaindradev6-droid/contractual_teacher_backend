@@ -7,7 +7,6 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-producti
 interface JwtPayload {
   userId: string;
   mobile_no: string;
-  updated_at: string;
 }
 
 export const authenticateToken = async (
@@ -32,9 +31,7 @@ export const authenticateToken = async (
     // Debug: Log token verification
     console.log('🔍 JWT Token Verified:', {
       userId: decoded.userId,
-      tokenExp: new Date((decoded as any).exp * 1000).toISOString(),
-      currentTime: new Date().toISOString(),
-      timeUntilExpiry: Math.round(((decoded as any).exp * 1000 - Date.now()) / 1000) + 's'
+      currentTime: new Date().toISOString()
     });
 
     const user = await prisma.applications.findUnique({
@@ -50,18 +47,6 @@ export const authenticateToken = async (
       });
     }
 
-    // 🔴 IMPORTANT PART
-    // If updated_at changed → logout user
-    if (
-      user.updated_at &&
-      new Date(user.updated_at).getTime() !== new Date(decoded.updated_at).getTime()
-    ) {
-      return res.status(401).json({
-        success: false,
-        message: "Session expired. Please login again."
-      });
-    }
-
     (req as any).userId = decoded.userId;
 
     next();
@@ -69,7 +54,7 @@ export const authenticateToken = async (
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: "Invalid or expired token"
+      message: "Invalid token"
     });
   }
 };

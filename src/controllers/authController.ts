@@ -118,23 +118,19 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    // Generate JWT token with updated_at for session invalidation
+    // Generate JWT token without expiration
     const token = jwt.sign(
       { 
         userId: user.application_id.toString(), 
-        mobile_no: user.mobile_no,
-        updated_at: user.updated_at?.toISOString() || new Date().toISOString()
+        mobile_no: user.mobile_no
       },
-      JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN } as SignOptions
+      JWT_SECRET
     );
 
     // Debug: Log token creation details
-    const decoded = jwt.decode(token) as any;
     console.log('🔑 JWT Token Created:', {
       userId: user.application_id.toString(),
-      expiresIn: process.env.JWT_EXPIRES_IN,
-      expiresAt: new Date(decoded.exp * 1000).toISOString(),
+      noExpiration: true,
       currentTime: new Date().toISOString()
     });
 
