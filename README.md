@@ -1,1 +1,0 @@
-# contractual_teacher_backend
