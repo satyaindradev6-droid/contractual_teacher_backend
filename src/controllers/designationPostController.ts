@@ -94,11 +94,12 @@ export const getSubjectsByDesignation = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: 'Invalid kv_id or designation_id parameter' });
     }
 
-    // SELECT subject_id FROM config_designation_post WHERE designation_id = ? AND kv_id = ?
+    // SELECT subject_id FROM config_designation_post WHERE designation_id = ? AND kv_id = ? AND is_open = 1
     const configRecords = await prisma.config_designation_post.findMany({
       where: {
         kv_id,
         designation_id,
+        is_open: 1,
         subject_id: { not: null }
       },
       select: { subject_id: true }
