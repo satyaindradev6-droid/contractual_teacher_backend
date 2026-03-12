@@ -1,9 +1,13 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { prisma } from '../utils/prisma';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
 
 // Register User
 export const register = async (req: Request, res: Response) => {
@@ -114,15 +118,25 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    // Generate JWT token with 1 day expiry
+    // Generate JWT token with updated_at for session invalidation
     const token = jwt.sign(
       { 
         userId: user.application_id.toString(), 
-        mobile_no: user.mobile_no 
+        mobile_no: user.mobile_no,
+        updated_at: user.updated_at?.toISOString() || new Date().toISOString()
       },
       JWT_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: process.env.JWT_EXPIRES_IN } as SignOptions
     );
+
+    // Debug: Log token creation details
+    const decoded = jwt.decode(token) as any;
+    console.log('🔑 JWT Token Created:', {
+      userId: user.application_id.toString(),
+      expiresIn: process.env.JWT_EXPIRES_IN,
+      expiresAt: new Date(decoded.exp * 1000).toISOString(),
+      currentTime: new Date().toISOString()
+    });
 
     res.json({
       success: true,
@@ -443,6 +457,64 @@ export const updateUserProfile = async (req: Request, res: Response) => {
     res.status(500).json({ 
       success: false, 
       message: 'Failed to update user profile' 
+    });
+  }
+};
+
+// Forgot Password - Verify user and reset password
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { mobile_no, email, date_of_birth, new_password } = req.body;
+
+    // Validate fields
+    if (!mobile_no || !email || !date_of_birth || !new_password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mobile number, email, date of birth and new password are required'
+      });
+    }
+
+    // Find user with matching details
+    const user = await prisma.applications.findFirst({
+      where: {
+        mobile_no,
+        email,
+        date_of_birth: new Date(date_of_birth)
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User details do not match'
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    // Update password
+    await prisma.applications.update({
+      where: {
+        application_id: user.application_id
+      },
+      data: {
+        password: hashedPassword,
+        updated_at: new Date()
+      }
+    });
+
+    return res.json({
+      success: true,
+      message: 'Password reset successfully'
+    });
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to reset password'
     });
   }
 };

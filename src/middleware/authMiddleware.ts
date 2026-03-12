@@ -1,46 +1,75 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { prisma } from "../utils/prisma";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
 interface JwtPayload {
   userId: string;
   mobile_no: string;
+  updated_at: string;
 }
 
-export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+export const authenticateToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const authHeader = req.headers.authorization;
 
-    console.log('Auth middleware - Token present:', !!token);
-
-    if (!token) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Access token required' 
+    if (!authHeader) {
+      return res.status(401).json({
+        success: false,
+        message: "Token required"
       });
     }
 
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
-      if (err) {
-        console.log('Token verification failed:', err.message);
-        return res.status(403).json({ 
-          success: false, 
-          message: 'Invalid or expired token' 
-        });
-      }
+    const token = authHeader.split(" ")[1];
 
-      (req as any).userId = (decoded as JwtPayload).userId;
-      (req as any).userMobile = (decoded as JwtPayload).mobile_no;
-      console.log('Token verified, userId:', (decoded as JwtPayload).userId);
-      next();
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+    
+    // Debug: Log token verification
+    console.log('🔍 JWT Token Verified:', {
+      userId: decoded.userId,
+      tokenExp: new Date((decoded as any).exp * 1000).toISOString(),
+      currentTime: new Date().toISOString(),
+      timeUntilExpiry: Math.round(((decoded as any).exp * 1000 - Date.now()) / 1000) + 's'
     });
+
+    const user = await prisma.applications.findUnique({
+      where: {
+        application_id: BigInt(decoded.userId)
+      }
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // 🔴 IMPORTANT PART
+    // If updated_at changed → logout user
+    if (
+      user.updated_at &&
+      new Date(user.updated_at).getTime() !== new Date(decoded.updated_at).getTime()
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired. Please login again."
+      });
+    }
+
+    (req as any).userId = decoded.userId;
+
+    next();
+
   } catch (error) {
-    console.error('Authentication error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Authentication failed' 
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token"
     });
   }
 };
